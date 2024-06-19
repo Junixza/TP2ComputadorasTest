@@ -66,4 +66,5 @@ EndPoint funcionales:
 | GET    | `/computadoras`        | Devuelve todos los articulos                            |
 | GET    | `/computadoras/:id`    | Devuelve un articulo por su Codigo                      |
 | GET    | `/computadoras/search` | Busca un articulo con ocurrencia por nombre o categoria |
-| PUT    | `/computadoras/:id`    | Actualiza los datos de una computadora existente        |
+| PUT    | `/computadoras/:id`    | Cambia los datos de una computadora existente           |
+| DELETE | `/computadoras/:id`    | Elimina los datos de una computadora existente          |
