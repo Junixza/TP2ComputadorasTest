@@ -90,6 +90,53 @@ app.get("/computadoras/search/:buscar", async (req, res) => {
   }
 });
 
+
+// endpoint POST para crear una nueva computadora
+app.post("/computadoras/", async (req, res) => {
+  const newData = req.body;
+  // campos requeridos y tipos esperados
+  const requiredFields = {
+    nombre: "string",
+    precio: "number",
+    categoria: "string",
+    codigo: "number",
+  };
+  // valido cada campo
+  for (const [field, type] of Object.entries(requiredFields)) {
+    if (!newData.hasOwnProperty(field)) {
+      return res.status(400).json({
+        error: `${field.charAt(0).toUpperCase() + field.slice(1)} es obligatorio.`,
+      });
+    }
+    if (typeof newData[field] !== type) {
+      return res.status(400).json({error: `${field.charAt(0).toUpperCase() + field.slice(1) } debe ser un(a) ${type}.`,
+      });
+    }
+  }
+  let db;
+  try {
+    db = await connectToMongoDB();
+    const collection = db.collection("computacion");
+  // Verificar si ya existe un producto con el mismo código
+  const existingProduct = await collection.findOne({ codigo: newData.codigo });
+  if (existingProduct) {
+    return res.status(400).json({ error: `El producto con el código ${newData.codigo} ya existe.` });
+  }
+  // Insertar el nuevo producto
+  const result = await collection.insertOne(newData);
+  res.status(201).json({
+    message: "Nueva computadora creada exitosamente",
+    data: result.ops[0],
+  });
+  } catch (error) {
+    console.error("Error al crear la computadora:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  } finally {
+    await disconnectToMongoDB();
+  }
+});
+
+
 // endpoint PUT para actualizar una pc por codigo
 app.put("/computadoras/:codigo", async (req, res) => {
   // aseguro que codigo sea integer
