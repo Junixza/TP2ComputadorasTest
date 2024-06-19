@@ -90,73 +90,90 @@ app.get("/computadoras/search/:buscar", async (req, res) => {
   }
 });
 
-// endpoint PUT para actualizar una pc por su código
+// endpoint PUT para actualizar una pc por codigo
 app.put("/computadoras/:codigo", async (req, res) => {
   // aseguro que codigo sea integer
   const codigo = parseInt(req.params.codigo);
   const newData = req.body;
-
   // me fijo que agrego datos no vacio
   if (!newData || Object.keys(newData).length === 0) {
     return res.status(400).json({ error: "Datos incompletos o incorrectos" });
   }
-
   // campos requeridos y tipos esperados
   const requiredFields = {
     nombre: "string",
     precio: "number",
     categoria: "string",
   };
-
   // valido cada campo
   for (const [field, type] of Object.entries(requiredFields)) {
     if (!newData.hasOwnProperty(field)) {
-      return res
-        .status(400)
-        .json({
-          error: `${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          } es obligatorio.`,
-        });
+      return res.status(400).json({
+        error: `${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } es obligatorio.`,
+      });
     }
     if (typeof newData[field] !== type) {
-      return res
-        .status(400)
-        .json({
-          error: `${
-            field.charAt(0).toUpperCase() + field.slice(1)
-          } debe ser un(a) ${type}.`,
-        });
+      return res.status(400).json({
+        error: `${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } debe ser un(a) ${type}.`,
+      });
     }
   }
-
   let db;
   try {
     db = await connectToMongoDB();
     const collection = db.collection("computacion");
-
     // actualizo
     const result = await collection.updateOne(
       { codigo: codigo },
       { $set: newData }
     );
-
     if (result.matchedCount === 0) {
-      return res
-        .status(404)
-        .json({
-          error: `No se encontró la computadora con el código ${codigo}`,
-        });
-    }
-
-    res
-      .status(200)
-      .json({
-        message: `Computadora con código ${codigo} actualizada exitosamente`,
-        data: newData,
+      return res.status(404).json({
+        error: `No se encontró la computadora con el código ${codigo}`,
       });
+    }
+    res.status(200).json({
+      message: `Computadora con código ${codigo} actualizada exitosamente`,
+      data: newData,
+    });
   } catch (error) {
     console.error("Error al actualizar la computadora:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  } finally {
+    await disconnectToMongoDB();
+  }
+});
+
+// endpoint DELETE para eliminar una pc por codigo
+app.delete("/computadoras/:codigo", async (req, res) => {
+  // aseguro que codigo sea integer
+  const codigo = parseInt(req.params.codigo);
+  // me fijo que agrego datos no vacio
+  if (isNaN(codigo)) {
+    return res
+      .status(400)
+      .json({ error: "El código debe ser un número válido" });
+  }
+  let db;
+  try {
+    db = await connectToMongoDB();
+    const collection = db.collection("computacion");
+    // elimino
+    const result = await collection.deleteOne({ codigo: codigo });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        error: `No se encontró la computadora con el código ${codigo}`,
+      });
+    }
+    res.status(200).json({
+      message: `Computadora con código ${codigo} eliminada exitosamente`,
+    });
+  } catch (error) {
+    console.error("Error al eliminar la computadora:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   } finally {
     await disconnectToMongoDB();
