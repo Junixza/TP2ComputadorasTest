@@ -49,22 +49,31 @@ Por cada endpoint, es importante controlar los posibles errores y retornar el c�
 
 ## Tabla de Endpoints
 
-| Método | Endpoint               | Descripción                                      |
-|--------|------------------------|--------------------------------------------------|
-| GET    | `/computadoras`        | Obtener todas las computadoras                   |
-| GET    | `/computadoras/:id`    | Obtener una computadora por su ID                |
-| GET    | `/computadoras/search` | Buscar computadoras por nombre o categoria       |
-| POST   | `/computadoras`        | Crear una nueva computadora                      |
-| PUT    | `/computadoras/:id`    | Actualizar una computadora existente             |
-| DELETE | `/computadoras/:id`    | Eliminar una computadora por su ID               |
+| Método | Endpoint               | Descripción                                      |  
+|--------|------------------------|--------------------------------------------------|  
+| GET    | `/computadoras`        | Obtener todas las computadoras                   |  
+| GET    | `/computadoras/:id`    | Obtener una computadora por su ID                |  
+| GET    | `/computadoras/search` | Buscar computadoras por nombre o categoria       |  
+| POST   | `/computadoras`        | Crear una nueva computadora                      |  
+| PUT    | `/computadoras/:id`    | Actualizar una computadora existente             |  
+| DELETE | `/computadoras/:id`    | Eliminar una computadora por su ID               |  
 
-EndPoint funcionales:
+## Tabla de Endpoints Funcionales  
 
-| Método | Endpoint               | Descripción                                             |
-|--------|------------------------|---------------------------------------------------------|
-| GET    | `/`                    | Raiz, Presenta el Home                                  |
-| GET    | `/computadoras`        | Devuelve todos los articulos                            |
-| GET    | `/computadoras/:id`    | Devuelve un articulo por su Codigo                      |
-| GET    | `/computadoras/search` | Busca un articulo con ocurrencia por nombre o categoria |
-| PUT    | `/computadoras/:id`    | Cambia los datos de una computadora existente           |
-| DELETE | `/computadoras/:id`    | Elimina los datos de una computadora existente          |
+| Método | Endpoint               | Descripción                                                                   |  
+|--------|------------------------|-------------------------------------------------------------------------------|  
+| GET    | `/`                    | Raiz, Presenta el Home.                                                       |  
+| GET    | `/computadoras`        | Metodo que retorna todos los articulos 'documentos' existentes.               |  
+| GET    | `/computadoras/:id`    | Metodo que retorna un articulo 'documento' por su Codigo.                     |  
+| GET    | `/computadoras/search` | Metodo que busca un articulo 'documento'con ocurrencia por nombre o categoria |  
+| POST   | `/computadoras/`       | Metodo que crea un producto 'documento' nuevo.                                |  
+| PUT    | `/computadoras/:id`    | Metodo que modifica los datos de un articulo 'documento' existente.           |  
+| DELETE | `/computadoras/:id`    | Elimina los datos de un articulo 'documento' existente.                       |  
+
+## Trabajo realizado por el grupo 7
+Conformado por:  
+
+|--Macarena Ferro  
+|--Jorgelina Sigal  
+|--Yanina Ferreira  
+|--Junixza Briceño  

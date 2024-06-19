@@ -3,22 +3,24 @@ const dotenv = require("dotenv");
 const { MongoClient, ObjectId } = require("mongodb");
 const { connectToMongoDB, disconnectToMongoDB } = require("./src/mongoDb");
 const app = express();
+const path = require('path'); 
 const PORT = process.env.PORT || 3000;
 
 dotenv.config();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Esta funcion normaliza, elimina caracteres de acento y convierte a minuscula
 function diacriticless(palabra) {
   return palabra
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-app.get("/", (req, res) => {
-  res.send("Hola, mundo!");
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+//Metodo de ruta Home
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+//Muestra todos los productos
 app.get("/computadoras", async (req, res) => {
   let db;
   try {
@@ -28,11 +30,11 @@ app.get("/computadoras", async (req, res) => {
     const productos = await collection.find().toArray();
     res.status(200).json(productos);
   } catch (error) {
-    console.error("Error al obtener datos de la base de datos:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+      console.error("Error al obtener datos de la base de datos:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
   } finally {
-    await disconnectToMongoDB();
-  }
+      await disconnectToMongoDB();
+}
 });
 
 // Obtener una computadora por su código
@@ -43,17 +45,14 @@ app.get("/computadoras/:id", async (req, res) => {
     const db = await connectToMongoDB();
     const collection = db.collection("computacion");
     const producto = await collection.findOne({ codigo: id });
-    console.log(producto);
     if (producto) {
       res.status(200).json(producto);
     } else {
-      res
-        .status(404)
-        .json({ error: `No se encontró el producto con el código ${id}` });
+      res.status(404).json({ error: `El producto con el código ${id} no existe o ha sido eliminado` });
     }
   } catch (error) {
     console.error("Error al obtener datos de la base de datos:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(400).json({ error: "Los datos enviados en el cuerpo de la solicitud no son válidos" });
   } finally {
     await disconnectToMongoDB();
   }
@@ -66,9 +65,8 @@ app.get("/computadoras/search/:buscar", async (req, res) => {
     const busqueda = diacriticless(buscar);
     const db = await connectToMongoDB();
     const collection = db.collection("computacion");
-
-    // Buscar sin considerar tildes ni diferencias de mayúsculas/minúsculas
     const productos = await collection.find().toArray();
+    // Buscar sin considerar tildes ni diferencias de mayúsculas/minúsculas
     const resultados = productos.filter((producto) => {
       const nombre = diacriticless(producto.nombre);
       const categoria = diacriticless(producto.categoria);
@@ -84,7 +82,7 @@ app.get("/computadoras/search/:buscar", async (req, res) => {
     }
   } catch (error) {
     console.error("Error al obtener datos de la base de datos:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(400).json({ error: "Los datos enviados en el cuerpo de la solicitud no son válidos" });
   } finally {
     await disconnectToMongoDB();
   }
@@ -130,7 +128,7 @@ app.post("/computadoras/", async (req, res) => {
   });
   } catch (error) {
     console.error("Error al crear la computadora:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(400).json({ error: "Los datos enviados en el cuerpo de la solicitud no son válidos" });
   } finally {
     await disconnectToMongoDB();
   }
@@ -139,10 +137,10 @@ app.post("/computadoras/", async (req, res) => {
 
 // endpoint PUT para actualizar una pc por codigo
 app.put("/computadoras/:codigo", async (req, res) => {
-  // aseguro que codigo sea integer
+  // verifica que el codigo sea int
   const codigo = parseInt(req.params.codigo);
   const newData = req.body;
-  // me fijo que agrego datos no vacio
+  // Verifica que el dato no sea null
   if (!newData || Object.keys(newData).length === 0) {
     return res.status(400).json({ error: "Datos incompletos o incorrectos" });
   }
@@ -152,7 +150,7 @@ app.put("/computadoras/:codigo", async (req, res) => {
     precio: "number",
     categoria: "string",
   };
-  // valido cada campo
+  // Validacion de campos
   for (const [field, type] of Object.entries(requiredFields)) {
     if (!newData.hasOwnProperty(field)) {
       return res.status(400).json({
@@ -173,7 +171,7 @@ app.put("/computadoras/:codigo", async (req, res) => {
   try {
     db = await connectToMongoDB();
     const collection = db.collection("computacion");
-    // actualizo
+    // actualiza la collection
     const result = await collection.updateOne(
       { codigo: codigo },
       { $set: newData }
@@ -189,17 +187,17 @@ app.put("/computadoras/:codigo", async (req, res) => {
     });
   } catch (error) {
     console.error("Error al actualizar la computadora:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(400).json({ error: "Los datos enviados en el cuerpo de la solicitud no son válidos" });
   } finally {
     await disconnectToMongoDB();
   }
 });
 
-// endpoint DELETE para eliminar una pc por codigo
+// EndPoint DELETE elimina un producto por codigo
 app.delete("/computadoras/:codigo", async (req, res) => {
-  // aseguro que codigo sea integer
+  // Verifica que el codigo sea int
   const codigo = parseInt(req.params.codigo);
-  // me fijo que agrego datos no vacio
+  // Verifica que no sea null
   if (isNaN(codigo)) {
     return res
       .status(400)
@@ -209,7 +207,7 @@ app.delete("/computadoras/:codigo", async (req, res) => {
   try {
     db = await connectToMongoDB();
     const collection = db.collection("computacion");
-    // elimino
+    // Elimina el documento de la collection
     const result = await collection.deleteOne({ codigo: codigo });
     if (result.deletedCount === 0) {
       return res.status(404).json({
@@ -221,7 +219,7 @@ app.delete("/computadoras/:codigo", async (req, res) => {
     });
   } catch (error) {
     console.error("Error al eliminar la computadora:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(400).json({ error: "Los datos enviados en el cuerpo de la solicitud no son válidos" });
   } finally {
     await disconnectToMongoDB();
   }
