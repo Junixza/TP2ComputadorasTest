@@ -6,7 +6,7 @@ body {
     color: #63167d;
 
 }
-ul,li {
+ul,li, h4 {
     text-align: initial;
     color: #333;
 }
